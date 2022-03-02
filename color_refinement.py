@@ -1,22 +1,52 @@
 from libraries import graph
 from libraries import graph_io
+import itertools
 
 
 # some way to get colored neighbourhood
 
+def have_same_neighbours(u: "graph.Vertex", v: "graph.Vertex"):
+    if u.degree != v.degree:
+        return False
+    for u_n in u.neighbours:
+        for v_n in v.neighbours:
+            if u_n.color == v_n.color and u_n != v_n:
+                return True
+    return False
+
+
+def map_neighbours_to_colors(u: "graph.Vertex"):
+    colored = []
+    for neighbour in u.neighbours:
+        colored.append(neighbour.color)
+    return colored
+
+
 def color_refinement(g: "graph.Graph"):
+    # here I can keep track of colors that have been used
+    colors = []
+    # and here I want to keep track of associating colors with neighbourhoods
+    colors_with_neighbourhoods = {}
     for vertex in g.vertices:
         vertex.color = vertex.degree
-    i = 0
-    for vertex in g.vertices:
-        vertex.previous_color = vertex.color
-        vertex.color = i
-        while True:
-            if vertex.color == vertex.color:
-                break
+        if vertex.color not in colors:
+            colors.append(vertex.color)
+    for color in colors:
+        colors_with_neighbourhoods[color] = []
 
-    # the plan is to:
-    # iterate through neighbourhood and see if the vertices with the same colour have same neighbourhoods
-    # if they don't, then change the colour to the next one that is suitable
-    # what to do with the colouring? how to distinct them? dict?
+    i = 0
+    while i < 1:
+        i += 1
+        for u, v in itertools.combinations(g.vertices, 2):
+            if u.color == v.color and not have_same_neighbours(u, v):
+                u.previous_color = u.color
+                colors.sort()
+                brand_new_color = colors[-1] + 1
+                u.color = brand_new_color
+                colors.append(brand_new_color)
+                # here place new neighbourhood
+                colors_with_neighbourhoods[brand_new_color] = map_neighbours_to_colors(u)
+            elif u.color == v.color and have_same_neighbours(u, v):
+                u.color = v.color
+        print(colors)
     return
