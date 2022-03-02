@@ -65,4 +65,4 @@ def color_refinement(g: "graph.Graph"):
         colors_after = colors.copy()
         if colors_after == colors_before:
             break
-    return
+    return graph
