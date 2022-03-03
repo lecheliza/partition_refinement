@@ -47,8 +47,6 @@ def color_refinement(g: "graph.Graph"):
         for u, v in itertools.combinations(g.vertices, 2):
             # case 1: they have the same color but different neighbourhoods -> they need to be colored differently
             if u.color == v.color and not have_same_neighbours(u, v):
-                # keep the old color in a separate field
-                u.previous_color = u.color
                 # make sure that colors are sorted in ascending order
                 colors.sort()
                 # take the last color and increase it to the next one
@@ -62,16 +60,15 @@ def color_refinement(g: "graph.Graph"):
                 v.previous_color = v.color
                 v.color = u.color
         colors_after = colors.copy()
-
-        for v in g.vertices:
-            print(f'vertex {v} with color {v.color}')
+        # for v in g.vertices:
+        #     print(f'vertex {v.label} has color {v.color}')
         if colors_after == colors_before:
-            print(colors)
             for color in colors:
                 colors_with_neighbourhoods[color] = []
             for vertex in g.vertices:
                 for neighbour in vertex.neighbours:
                     if len(colors_with_neighbourhoods[vertex.color]) < vertex.degree:
                         colors_with_neighbourhoods[vertex.color].append(neighbour.color)
+                        colors_with_neighbourhoods[vertex.color].sort()
             break
     return colors_with_neighbourhoods
