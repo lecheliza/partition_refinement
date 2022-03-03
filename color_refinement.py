@@ -8,13 +8,27 @@ def have_same_neighbours(u: "graph.Vertex", v: "graph.Vertex"):
     # obviously, they cannot have the same neighbours if they have different amount of them
     if u.degree != v.degree:
         return False
+    # create two lists for storing the colors in the neighbourhoods of two vertices
+    u_colored_neighbours = []
+    v_colored_neighbours = []
+    # add colors to the lists
     for u_n in u.neighbours:
-        for v_n in v.neighbours:
-            # if neighbour color in u is the same in the neighbour color in v and they are not the same vertex
-            if u_n.color == v_n.color and u_n != v_n:
-                print(f'color {u_n.color} and {v_n.color} for vertices {u_n.label} and {v_n.label}')
-                return True
-    return False
+        u_colored_neighbours.append(u_n.color)
+    for v_n in v.neighbours:
+        v_colored_neighbours.append(v_n.color)
+    # to make sure that the result of this function will be correct, I sort the lists
+    u_colored_neighbours.sort()
+    v_colored_neighbours.sort()
+    # compare the lists
+    if u_colored_neighbours != v_colored_neighbours:
+        return False
+    # for u_n in u.neighbours:
+    #     for v_n in v.neighbours:
+    #         # if neighbour color in u is the same in the neighbour color in v and they are not the same vertex
+    #         if u_n.color != v_n.color and u_n != v_n:
+    #             print(f'color {u_n.color} and {v_n.color} for vertices {u_n.label} and {v_n.label}')
+    #             return False
+    return True
 
 
 def map_neighbours_to_colors(u: "graph.Vertex"):
@@ -43,6 +57,8 @@ def color_refinement(g: "graph.Graph"):
         for u, v in itertools.combinations(g.vertices, 2):
             # case 1: they have the same color but different neighbourhoods -> they need to be colored differently
             if u.color == v.color and not have_same_neighbours(u, v):
+                print(f'vertex neighbours {u.neighbours} and {v.neighbours}')
+                print(f'vertex{u.label} and vertex {v.label} have colors {u.color} and {v.color}')
                 # keep the old color in a separate field
                 u.previous_color = u.color
                 # make sure that colors are sorted in ascending order
@@ -63,6 +79,7 @@ def color_refinement(g: "graph.Graph"):
                 u.previous_color = u.color
                 u.color = v.color
         colors_after = colors.copy()
+        print(colors)
         if colors_after == colors_before:
             break
     return graph

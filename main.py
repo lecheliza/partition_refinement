@@ -11,8 +11,8 @@ for i in range(1, 4):
     i += 1
 print(color_refinement(sample_graph))
 
-with open('') as f:
-    G = load_graph(f)
-
-with open('', 'w') as f:
-    save_graph(sample_graph, f)
+# with open('') as f:
+#     G = load_graph(f)
+#
+# with open('', 'w') as f:
+#     save_graph(sample_graph, f)
