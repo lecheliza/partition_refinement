@@ -50,7 +50,11 @@ def color_refinement(g: "graph.Graph"):
             colors.append(vertex.color)
     for color in colors:
         colors_with_neighbourhoods[color] = []
-
+    for vertex in g.vertices:
+        for neighbour in vertex.neighbours:
+            if len(colors_with_neighbourhoods[vertex.color]) < vertex.degree:
+                colors_with_neighbourhoods[vertex.color].append(neighbour.color)
+    print(colors_with_neighbourhoods)
     while True:
         colors_before = colors.copy()
         # compare all vertices with each other
@@ -74,11 +78,19 @@ def color_refinement(g: "graph.Graph"):
                 # because - what if now two colors have different neighbourhoods?
                 # it is possible in the early iteration step...
                 colors_with_neighbourhoods[brand_new_color] = map_neighbours_to_colors(u)
+                print(colors_with_neighbourhoods)
             # otherwise, if colors aren't the same but their neighbours are the same, they should have the same color
             elif u.color != v.color and have_same_neighbours(u, v):
-                u.previous_color = u.color
-                u.color = v.color
+                v.previous_color = v.color
+                v.color = u.color
         colors_after = colors.copy()
+        used_colors = []
+        for v in g.vertices:
+            print(f'vertex {v} with color {v.color}')
+            used_colors.append(v.color)
+        for c in colors:
+            if c not in used_colors:
+                colors.remove(c)
         print(colors)
         if colors_after == colors_before:
             break
