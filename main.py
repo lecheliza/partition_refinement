@@ -28,16 +28,34 @@ def compare_graphs(list_of_graphs):
 # print(color_refinement(sample_graph))
 
 with open('test_files/colorref_smallexample_4_7.grl') as f:
-    g0 = load_graph(f)
-    g1 = load_graph(f)
-    g2 = load_graph(f)
-    g3 = load_graph(f)
+    graphs = load_graph(f, read_list=True)
 
-list_graphs = [g0, g1, g2, g3]
+huge_graph = graph.Graph(False)
+for g in graphs[0]:
+    huge_graph = huge_graph + g
+
+n = color_refinement(huge_graph)
+print(n)
+
 # print(compare_graphs(list_graphs))
 
-print(color_refinement(g1))
-print(color_refinement(g3))
+
+
+
+
+# colors1 = {}
+# colors2 = {}
+# print(x.keys)
+# for color in x.keys():
+#     colors1[color] = 0
+#     colors2[color] = 0
+# for vertex in x.keys:
+#     colors1[vertex] += 1
+# for vertex in vertices_1:
+#     colors2[vertex] += 1
 
 # with open('test_files/done_example.dot', 'w') as f:
 #     save_graph(G, f)
+
+# with open('test_files/done_example.dot', 'w') as f:
+#     write_dot(graphs[0][1], f)
