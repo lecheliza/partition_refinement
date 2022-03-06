@@ -1,6 +1,6 @@
 from itertools import combinations
 from collections import defaultdict
-import numpy as np
+
 from libraries import graph, graph_io
 
 
@@ -24,6 +24,41 @@ def initialize_colors(g, colors):
             colors.append(vertex.colornum)
 
 
+def append_if_same_color(vertices, color, list1, list2):
+    for v in vertices:
+        if v.colornum == color:
+            list1.append(v)  # add it to the list with all vertices with this color
+            list2.append(v.neighbours)  # and add its neighbours
+    return
+
+
+def append_colored_neighbours(object_list, result_list):
+    for n in object_list:  # here I want to get colors of the neighbours
+        auxiliary_list = (v.colornum for v in n)  # fill the list with neighbours colors
+        result_list.append(sorted(auxiliary_list))
+    return
+
+
+def split_graph(g, partitions):
+    subgraphs, start_index, label = [], 0, 0
+    for subgraph_index in range(1, len(g.vertices) + 1):
+        if subgraph_index % partitions == 0:
+            new_graph = graph.Graph(g.directed, partitions)
+            new_graph.label = label  # I use it only for nice printing at the end
+            new_graph.colors = []  # list for storing all the colors that appeared in the graph
+            auxiliary_index = 0
+            for v in g.vertices[start_index:subgraph_index]:
+                new_graph.vertices.append(v)
+                new_graph.vertices[auxiliary_index].colornum = v.colornum
+                new_graph.colors.append(v.colornum)
+                auxiliary_index += 1
+            start_index = subgraph_index  # update starting index
+            new_graph.colors.sort()  # sorting helps in comparing
+            subgraphs.append(new_graph)
+            label += 1
+    return subgraphs
+
+
 def color_refinement(g: "graph.Graph", input_length: int):
     colors = []  # all the colors used in graphs
     initialize_colors(g, colors)
@@ -35,13 +70,9 @@ def color_refinement(g: "graph.Graph", input_length: int):
             current_color_vertices.clear()
             current_color_neighbourhoods_as_objects.clear()
             current_color_neighbourhoods_as_colors.clear()
-            for v in g.vertices:
-                if v.colornum == current_color:
-                    current_color_vertices.append(v)  # add it to the list with all vertices with this color
-                    current_color_neighbourhoods_as_objects.append(v.neighbours)  # and add its neighbours
-            for n in current_color_neighbourhoods_as_objects:  # here I want to get colors of the neighbours
-                auxiliary_list = (v.colornum for v in n)  # fill the list with neighbours colors
-                current_color_neighbourhoods_as_colors.append(sorted(auxiliary_list))
+            append_if_same_color(g.vertices, current_color, current_color_vertices,
+                                 current_color_neighbourhoods_as_objects)
+            append_colored_neighbours(current_color_neighbourhoods_as_objects, current_color_neighbourhoods_as_colors)
             color_to_occurrences = list_to_dict(current_color_neighbourhoods_as_colors)
             while len(color_to_occurrences) > 1:  # so I want to change colors of those which
                 # occurs the lowest number of times
@@ -57,28 +88,14 @@ def color_refinement(g: "graph.Graph", input_length: int):
                 color_to_occurrences.pop(tuple(neighbours_that_are_different))  # this pair is not of this color anymore
         colors_after = tuple(colors)
         if colors_before == colors_after:  # if the colors changed, start comparing
-            subgraphs, start_index, label = [], 0, 0
-            for subgraph_index in range(1, len(g.vertices) + 1):
-                if subgraph_index % input_length == 0:
-                    new_graph = graph.Graph(g.directed, input_length)
-                    new_graph.label = label  # I use it only for nice printing at the end
-                    new_graph.colors = []  # list for storing all the colors that appeared in the graph
-                    auxiliary_index = 0
-                    for v in g.vertices[start_index:subgraph_index]:
-                        new_graph.vertices.append(v)
-                        new_graph.vertices[auxiliary_index].colornum = v.colornum
-                        new_graph.colors.append(v.colornum)
-                        auxiliary_index += 1
-                    start_index = subgraph_index  # update starting index
-                    new_graph.colors.sort()  # sorting helps in comparing
-                    subgraphs.append(new_graph)
-                    label += 1
+            subgraphs = split_graph(g, input_length)
             for u, v in combinations(subgraphs, 2):
                 if u.colors == v.colors:
+                    is_discrete = len(set(u.colors)) == len(u.vertices)
                     print(
-                        f"Potentially isomorphic graphs: [{u.label}, {v.label}] "
-                        f"{'discrete' if len(u.colors) == len(u.vertices) else ''}")
-            # with open('../partition_refinement/test_files/done1.dot', 'w') as f:
-            #     graph_io.write_dot(g, f)
+                        f"Possibly isomorphic graphs: [{u.label}, {v.label}] "
+                        f"{'discrete' if is_discrete else ''}")
+            with open('../partition_refinement/test_files/done1.dot', 'w') as f:
+                graph_io.write_dot(g, f)
             break
     return g

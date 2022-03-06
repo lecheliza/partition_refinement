@@ -10,6 +10,5 @@ with open('../partition_refinement/test_files/colorref_largeexample_6_960.grl') 
 huge_graph = graph.Graph(False)
 for g in graphs[0]:
     huge_graph = huge_graph + g
-print('disjoint union ended')
 n = color_refinement(huge_graph, len(graphs[0][0]))
 print("--- %s seconds ---" % (time.time() - start_time))
