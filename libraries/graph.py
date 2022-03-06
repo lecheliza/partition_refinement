@@ -3,7 +3,7 @@ This is a module for working with directed and undirected multigraphs.
 """
 # version: 29-01-2015, Paul Bonsma
 # version: 01-02-2017, Pieter Bos, Tariq Bontekoe
-
+import itertools
 from typing import List, Union, Set
 
 
@@ -324,7 +324,6 @@ class Graph(object):
         :return: New graph which is a disjoint union of `self' and `other'.
         """
         result_graph = Graph(self.directed)
-        length = len(self.vertices) - 1
         vertices_dictionary = {}
         for v in self.vertices:
             vertices_dictionary[v] = Vertex(result_graph)
@@ -332,20 +331,10 @@ class Graph(object):
             vertices_dictionary[v] = Vertex(result_graph)
         for i in vertices_dictionary.values():
             result_graph.add_vertex(i)
-        for i in range(0, len(self.vertices)):
-            for j in range(i, len(self.vertices)):
-                u = self.vertices[i]
-                v = self.vertices[j]
-                if self.find_edge(u, v) and u != v:
-                    result_graph.add_edge(Edge(vertices_dictionary[u], vertices_dictionary[v]))
-        for i in range(0, len(other.vertices)):
-            for j in range(i, len(other.vertices)):
-                u = other.vertices[i]
-                v = other.vertices[j]
-                # instead of finding edges it would be better to iterate through the edges
-                if other.find_edge(u, v) and u != v:
-                    # there I should find the original vertices from the dictionary and then connect them
-                    result_graph.add_edge(Edge(vertices_dictionary[u], vertices_dictionary[v]))
+        for e in self.edges:
+            result_graph.add_edge(Edge(vertices_dictionary[e.head], vertices_dictionary[e.tail]))
+        for e in other.edges:
+            result_graph.add_edge(Edge(vertices_dictionary[e.head], vertices_dictionary[e.tail]))
         return result_graph
 
     def del_edge(self, edge: "Edge"):
