@@ -1,3 +1,6 @@
+import itertools
+from queue import *
+
 from libraries import graph, graph_io
 
 
@@ -21,56 +24,65 @@ def longest(input_list):
     return longest_list
 
 
-def color_refinement(g: "graph.Graph"):
-    # here I can keep track of colors that have been used
-    colors = []
-    # assign first colors to the vertices based on their degrees
-    for vertex in g.vertices:
+def color_refinement(g: "graph.Graph", input_length: int):
+    colors = []  # here I can keep track of colors that have been used
+    for vertex in g.vertices:  # assign first colors to the vertices based on their degrees
         vertex.colornum = vertex.degree
         if vertex.colornum not in colors:
             colors.append(vertex.colornum)
-    color_index = 0
     while True:
         colors_before = colors.copy()
-        # start with a color
-        current_color = colors[color_index]
-        # here I will store vertices that have the color I am currently examining
-        current_color_vertices = []
-        # here I will store neighbourhoods of the vertices I am currently examining
-        current_color_neighbourhoods_as_objects = []
-        # here I will store neighbourhoods AS COLORS
-        current_color_neighbourhoods_as_colors = []
-        # iterate through the whole graph
-        for v in g.vertices:
-            # if current vertex has the color I want
-            if v.colornum == current_color:
-                # I add it to the list with all vertices with this color
-                current_color_vertices.append(v)
-                # and I add its neighbours
-                current_color_neighbourhoods_as_objects.append(v.neighbours)
-        # here I want to get colors of the neighbours
-        for n in current_color_neighbourhoods_as_objects:
-            auxiliary_list = []
-            for v in n:
-                auxiliary_list.append(v.colornum)
-                auxiliary_list.sort()
-            current_color_neighbourhoods_as_colors.append(auxiliary_list)
-        # map in which i can keep track of neighbours and how many times they occur for that color
-        color_to_occurrences = list_to_dict(current_color_neighbourhoods_as_colors)
-        # so I want to change colors of those which occurs the lowest number of times
-        while len(color_to_occurrences) > 1:
-            neighbours_that_are_different = min(color_to_occurrences, key=color_to_occurrences.get)
-            neighbours_that_are_different = list(neighbours_that_are_different)
-            new_color = max(colors) + 1
-            for z in range(len(current_color_neighbourhoods_as_colors)):
-                if current_color_neighbourhoods_as_colors[z] == neighbours_that_are_different:
-                    current_color_vertices[z].colornum = new_color
-                    if new_color not in colors:
-                        colors.append(new_color)
-            color_to_occurrences.pop(tuple(neighbours_that_are_different))
-        color_index += 1
+        for current_color in colors:
+            current_color_vertices = []  # here I will store vertices that have the color I am currently examining
+            current_color_neighbourhoods_as_objects = []  # here I store neighbourhoods of the vertices currently examined
+            current_color_neighbourhoods_as_colors = []  # here I will store neighbourhoods AS COLORS
+            for v in g.vertices:  # iterate through the whole graph
+                if v.colornum == current_color:  # if current vertex has the color I want
+                    current_color_vertices.append(v)  # I add it to the list with all vertices with this color
+                    current_color_neighbourhoods_as_objects.append(v.neighbours)  # and I add its neighbours
+            for n in current_color_neighbourhoods_as_objects:  # here I want to get colors of the neighbours
+                auxiliary_list = []
+                for v in n:
+                    auxiliary_list.append(v.colornum)
+                    auxiliary_list.sort()
+                current_color_neighbourhoods_as_colors.append(auxiliary_list)
+            color_to_occurrences = list_to_dict(
+                current_color_neighbourhoods_as_colors)  # map in which i can keep track of neighbours and
+            # how many times they occur for that color
+            while len(color_to_occurrences) > 1:  # so I want to change colors of those which
+                # occurs the lowest number of times
+                neighbours_that_are_different = min(color_to_occurrences, key=color_to_occurrences.get)
+                neighbours_that_are_different = list(neighbours_that_are_different)
+                new_color = max(colors) + 1
+                for z in range(len(current_color_neighbourhoods_as_colors)):
+                    if current_color_neighbourhoods_as_colors[z] == neighbours_that_are_different:
+                        current_color_vertices[z].colornum = new_color
+                        if new_color not in colors:
+                            colors.append(new_color)
+                color_to_occurrences.pop(tuple(neighbours_that_are_different))
         colors_after = colors.copy()
         if colors_before == colors_after:
+            # subgraphs = []
+            # start_index = 0
+            # label = 0
+            # for sg in range(1, len(g.vertices) + 1):
+            #     if sg % input_length == 0:
+            #         new_graph = graph.Graph(g.directed, input_length)
+            #         new_graph.label = label
+            #         new_graph.colors = []
+            #         auxiliary_index = 0
+            #         for v in g.vertices[start_index:sg]:
+            #             new_graph.vertices.append(v)
+            #             new_graph.vertices[auxiliary_index].colornum = v.colornum
+            #             new_graph.colors.append(v.colornum)
+            #             auxiliary_index += 1
+            #         start_index = sg
+            #         new_graph.colors.sort()
+            #         subgraphs.append(new_graph)
+            #         label += 1
+            # for u, v in itertools.combinations(subgraphs, 2):
+            #     if u.colors == v.colors:
+            #         print(f'Potentially isomorphic graphs: {u.label}, {v.label}')
             with open('../partition_refinement/test_files/done1.dot', 'w') as f:
                 graph_io.write_dot(g, f)
             break
