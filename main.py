@@ -27,7 +27,7 @@ def compare_graphs(list_of_graphs):
 #     i += 1
 # print(color_refinement(sample_graph))
 
-with open('test_files/colorref_smallexample_4_7.grl') as f:
+with open('../partition_refinement/test_files/colorref_smallexample_4_7.grl') as f:
     graphs = load_graph(f, read_list=True)
 
 huge_graph = graph.Graph(False)
@@ -35,7 +35,6 @@ for g in graphs[0]:
     huge_graph = huge_graph + g
 
 n = color_refinement(huge_graph)
-print(n)
 
 # print(compare_graphs(list_graphs))
 

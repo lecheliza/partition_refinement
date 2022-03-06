@@ -1,28 +1,4 @@
-from libraries import graph
-import itertools
-from libraries import graph_io
-
-
-# this function determines if two vertices have similarly colored neighbourhoods
-def have_same_neighbours(u: "graph.Vertex", v: "graph.Vertex"):
-    # obviously, they cannot have the same neighbours if they have different amount of them
-    if u.degree != v.degree:
-        return False
-    # create two lists for storing the colors in the neighbourhoods of two vertices
-    u_colored_neighbours = []
-    v_colored_neighbours = []
-    # add colors to the lists
-    for u_n in u.neighbours:
-        u_colored_neighbours.append(u_n.colornum)
-    for v_n in v.neighbours:
-        v_colored_neighbours.append(v_n.colornum)
-    # to make sure that the result of this function will be correct, I sort the lists
-    u_colored_neighbours.sort()
-    v_colored_neighbours.sort()
-    # compare the lists
-    if u_colored_neighbours != v_colored_neighbours:
-        return False
-    return True
+from libraries import graph, graph_io
 
 
 def list_to_dict(colors_list):
@@ -36,76 +12,66 @@ def list_to_dict(colors_list):
     return dict_to_be_returned
 
 
+def longest(input_list):
+    largest_number = max(len(element) for element in input_list)
+    longest_list = []
+    for l in input_list:
+        if len(l) == largest_number:
+            longest_list = l
+    return longest_list
+
+
 def color_refinement(g: "graph.Graph"):
     # here I can keep track of colors that have been used
     colors = []
-    # and here I want to keep track of associating colors with neighbourhoods
-    colors_with_neighbourhoods = {}
     # assign first colors to the vertices based on their degrees
     for vertex in g.vertices:
         vertex.colornum = vertex.degree
         if vertex.colornum not in colors:
             colors.append(vertex.colornum)
+    color_index = 0
     while True:
         colors_before = colors.copy()
-        for u in g.vertices:
-            list1 = []
-            list_vertices_obj = []
-            vertices_that_are_similar = []
-            for v_c in g.vertices:
-                if v_c.colornum == u.colornum:
-                    vertices_that_are_similar.append(v_c)
-            for color_v in vertices_that_are_similar:
-                list2 = []
-                list_vertices_obj.append(color_v)
-                for neighbours in color_v.neighbours:
-                    list2.append(neighbours.colornum)
-                list1.append(list2)
-            map1 = list_to_dict(list1)
-            print(list_vertices_obj)
-            minimal_color_occurences = min(map1, key=map1.get)
-            minimal_color_occurences = list(minimal_color_occurences)
-            print(minimal_color_occurences)
-            vertices_to_be_changed = []
-            for index in range(0, len(list1)):
-                if list1[index] == minimal_color_occurences:
-                    new_color = max(colors) + 1
-                    list_vertices_obj[index].colornum = new_color
-                    colors.append(new_color)
-                    print(colors)
-            print(vertices_to_be_changed)
-        # compare all vertices with each other
-        for u, v in itertools.combinations(g.vertices, 2):
-            # case 1: they have the same color but different neighbourhoods -> they need to be colored differently
-            if u.colornum == v.colornum and not have_same_neighbours(u, v):
-                print(f'vertex {u.label} and vertex {v.label}')
-                # find the list of vertices that are in the same situation --> colors etc
-
-                # lista list sąsiadów
-                # make sure that colors are sorted in ascending order
-                colors.sort()
-                # take the last color and increase it to the next one
-                brand_new_color = colors[-1] + 1
-                # assign new color to the vertex
-                u.colornum = brand_new_color
-                # add color to the list of used colors
-                colors.append(brand_new_color)
-            # otherwise, if colors aren't the same but their neighbours are the same, they should have the same color
-            elif u.colornum != v.colornum and have_same_neighbours(u, v):
-                v.colornum = u.colornum
+        # start with a color
+        current_color = colors[color_index]
+        # here I will store vertices that have the color I am currently examining
+        current_color_vertices = []
+        # here I will store neighbourhoods of the vertices I am currently examining
+        current_color_neighbourhoods_as_objects = []
+        # here I will store neighbourhoods AS COLORS
+        current_color_neighbourhoods_as_colors = []
+        # iterate through the whole graph
+        for v in g.vertices:
+            # if current vertex has the color I want
+            if v.colornum == current_color:
+                # I add it to the list with all vertices with this color
+                current_color_vertices.append(v)
+                # and I add its neighbours
+                current_color_neighbourhoods_as_objects.append(v.neighbours)
+        # here I want to get colors of the neighbours
+        for n in current_color_neighbourhoods_as_objects:
+            auxiliary_list = []
+            for v in n:
+                auxiliary_list.append(v.colornum)
+                auxiliary_list.sort()
+            current_color_neighbourhoods_as_colors.append(auxiliary_list)
+        # map in which i can keep track of neighbours and how many times they occur for that color
+        color_to_occurrences = list_to_dict(current_color_neighbourhoods_as_colors)
+        # so I want to change colors of those which occurs the lowest number of times
+        while len(color_to_occurrences) > 1:
+            neighbours_that_are_different = min(color_to_occurrences, key=color_to_occurrences.get)
+            neighbours_that_are_different = list(neighbours_that_are_different)
+            new_color = max(colors) + 1
+            for z in range(len(current_color_neighbourhoods_as_colors)):
+                if current_color_neighbourhoods_as_colors[z] == neighbours_that_are_different:
+                    current_color_vertices[z].colornum = new_color
+                    if new_color not in colors:
+                        colors.append(new_color)
+            color_to_occurrences.pop(tuple(neighbours_that_are_different))
+        color_index += 1
         colors_after = colors.copy()
-        if colors_after == colors_before:
-            for index in colors:
-                colors_with_neighbourhoods[index] = []
-            for vertex in g.vertices:
-                for neighbour in vertex.neighbours:
-                    if len(colors_with_neighbourhoods[vertex.colornum]) < vertex.degree:
-                        colors_with_neighbourhoods[vertex.colornum].append(neighbour.colornum)
-                        colors_with_neighbourhoods[vertex.colornum].sort()
-            with open('test_files/done.dot', 'w') as f:
+        if colors_before == colors_after:
+            with open('../partition_refinement/test_files/done1.dot', 'w') as f:
                 graph_io.write_dot(g, f)
             break
-    return colors_with_neighbourhoods
-
-# def color_refinement(g: "graph.Graph"):
-#     vertex_with_colors = {}
+    return g
