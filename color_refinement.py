@@ -45,15 +45,20 @@ def split_graph(g, partitions):
         if subgraph_index % partitions == 0:
             new_graph = graph.Graph(g.directed, partitions)
             new_graph.label = label  # I use it only for nice printing at the end
-            new_graph.colors = []  # list for storing all the colors that appeared in the graph
+            new_graph.colors = {}
+            # new_graph.colors = []  # list for storing all the colors that appeared in the graph
             auxiliary_index = 0
             for v in g.vertices[start_index:subgraph_index]:
                 new_graph.vertices.append(v)
                 new_graph.vertices[auxiliary_index].colornum = v.colornum
-                new_graph.colors.append(v.colornum)
+                if v.colornum in new_graph.colors.keys():
+                    new_graph.colors[v.colornum] += 1
+                else:
+                    new_graph.colors[v.colornum] = 1
+                # new_graph.colors.append(v.colornum)
                 auxiliary_index += 1
             start_index = subgraph_index  # update starting index
-            new_graph.colors.sort()  # sorting helps in comparing
+            # new_graph.colors.sort()  # sorting helps in comparing
             subgraphs.append(new_graph)
             label += 1
     return subgraphs
@@ -91,7 +96,7 @@ def color_refinement(g: "graph.Graph", input_length: int):
             subgraphs = split_graph(g, input_length)
             for u, v in combinations(subgraphs, 2):
                 if u.colors == v.colors:
-                    is_discrete = len(set(u.colors)) == len(u.vertices)
+                    is_discrete = len(u.colors.keys()) == len(u.vertices)
                     print(
                         f"Possibly isomorphic graphs: [{u.label}, {v.label}] "
                         f"{'discrete' if is_discrete else ''}")
