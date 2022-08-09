@@ -1,6 +1,6 @@
 # partition_refinement
 
-Partition refinement, also known as color refinement, is an algorithm used to detect potentially isomorphic graphs by marking two vertices with the same color if they have similar neighbourhoods. Two graphs might be isomorphic if they share the same set of colored vertices.
+Partition refinement, also known as color refinement, is an algorithm used to detect potentially isomorphic graphs by marking two vertices in the separate graphs with the same color if and only if they have similar neighbourhoods. Two graphs might be isomorphic if they share the same set of colored vertices.
 
 This repository contains source code for partition refinement algorithm and graph class provided by University of Twente that was edited to fit my needs better.
 
