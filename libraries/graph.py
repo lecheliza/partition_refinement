@@ -3,7 +3,6 @@ This is a module for working with directed and undirected multigraphs.
 """
 # version: 29-01-2015, Paul Bonsma
 # version: 01-02-2017, Pieter Bos, Tariq Bontekoe
-import itertools
 from typing import List, Union, Set
 
 
@@ -317,6 +316,7 @@ class Graph(object):
         edge.head._add_incidence(edge)
         edge.tail._add_incidence(edge)
 
+    # implemented by Eliza Lech, February 2022
     def __add__(self, other: "Graph") -> "Graph":
         """
         Make a disjoint union of two graphs.
@@ -353,7 +353,6 @@ class Graph(object):
             self._v.remove(vertex)
         else:
             raise GraphError("Cannot delete vertex that does not exist.")
-
 
     def __iadd__(self, other: Union[Edge, Vertex]) -> "Graph":
         """
