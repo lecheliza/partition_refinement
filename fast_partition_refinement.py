@@ -62,12 +62,12 @@ def fast_partition_refinement(g_list):
         for k in c_t_d:
             colors_with_vertices.pop(k)
         colors_with_vertices.update(colors_to_add)
-    with open('../partition_refinement/test_files/done1.dot', 'w') as f:
+    with open('../partition_refinement/test_files/fpr_result.dot', 'w') as f:
         write_dot(input_graph, f)
     return
 
 
-with open('../partition_refinement/test_files/colorref_smallexample_4_7.grl') as f:
+with open('../partition_refinement/test_files/colorref_smallexample_4_16.grl') as f:
     graphs = load_graph(f, read_list=True)
 
 start_time = time.time()

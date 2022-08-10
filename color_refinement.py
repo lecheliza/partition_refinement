@@ -98,7 +98,7 @@ def color_refinement(g_list):
                     print(
                         f"Possibly isomorphic graphs: [{u.label}, {v.label}] "
                         f"{'discrete' if is_discrete else ''}")
-            with open('../partition_refinement/test_files/done1.dot', 'w') as f:
+            with open('../partition_refinement/test_files/cr_result.dot', 'w') as f:
                 graph_io.write_dot(g, f)
             break
     return g
